@@ -20,21 +20,21 @@ train() {
     local max_steps="${3:-2000}"
 
     build_bridge
-    "$VENV_PY" "$ROOT_DIR/rl/train.py" \
+    "$VENV_PY" "$ROOT_DIR/rl_dqn/train.py" \
         --episodes "$episodes" \
         --save-every "$save_every" \
         --max-steps "$max_steps"
 }
 
 resume_train() {
-    local checkpoint="${1:-$ROOT_DIR/rl/runs/dqn_best.pt}"
+    local checkpoint="${1:-$ROOT_DIR/rl_dqn/runs/dqn_best.pt}"
     local episodes="${2:-1000}"
     local save_every="${3:-50}"
     local max_steps="${4:-2000}"
     local resume_lr="${5:-0.0003}"
 
     build_bridge
-    "$VENV_PY" "$ROOT_DIR/rl/train.py" \
+    "$VENV_PY" "$ROOT_DIR/rl_dqn/train.py" \
         --episodes "$episodes" \
         --save-every "$save_every" \
         --max-steps "$max_steps" \
@@ -44,12 +44,12 @@ resume_train() {
 }
 
 play_model() {
-    local checkpoint="${1:-$ROOT_DIR/rl/runs/dqn_best.pt}"
+    local checkpoint="${1:-$ROOT_DIR/rl_dqn/runs/dqn_best.pt}"
     local episodes="${2:-1}"
     local max_steps="${3:-6000}"
 
     build_bridge
-    "$VENV_PY" "$ROOT_DIR/rl/replay.py" \
+    "$VENV_PY" "$ROOT_DIR/rl_dqn/replay.py" \
         --checkpoint "$checkpoint" \
         --episodes "$episodes" \
         --max-steps "$max_steps" \
@@ -61,7 +61,7 @@ find_best() {
     local max_steps="${2:-2000}"
 
     build_bridge
-    "$VENV_PY" "$ROOT_DIR/rl/evaluate.py" \
+    "$VENV_PY" "$ROOT_DIR/rl_dqn/evaluate.py" \
         --episodes "$episodes" \
         --max-steps "$max_steps"
 }
@@ -71,7 +71,7 @@ promote_best() {
     local max_steps="${2:-2000}"
 
     build_bridge
-    "$VENV_PY" "$ROOT_DIR/rl/evaluate.py" \
+    "$VENV_PY" "$ROOT_DIR/rl_dqn/evaluate.py" \
         --episodes "$episodes" \
         --max-steps "$max_steps" \
         --promote-best
@@ -79,7 +79,7 @@ promote_best() {
 
 usage() {
     cat <<EOF
-Usage: ./rl.sh <command> [args]
+Usage: ./rl_dqn.sh <command> [args]
 
 Commands:
   build
@@ -89,16 +89,16 @@ Commands:
     Train from scratch (defaults: 1000 50 2000)
 
   resume [checkpoint] [episodes] [save_every] [max_steps] [resume_lr]
-    Resume from checkpoint (defaults: rl/runs/dqn_best.pt 1000 50 2000 0.0003)
+    Resume from checkpoint (defaults: rl_dqn/runs/dqn_best.pt 1000 50 2000 0.0003)
 
   play [checkpoint] [episodes] [max_steps]
-    Play a model with rendering (defaults: rl/runs/dqn_best.pt 1 6000)
+    Play a model with rendering (defaults: rl_dqn/runs/dqn_best.pt 1 6000)
 
     best [episodes] [max_steps]
         Evaluate checkpoints and print best (defaults: 10 2000)
 
     promote [episodes] [max_steps]
-        Evaluate checkpoints and copy best to rl/runs/dqn_best.pt (defaults: 10 2000)
+        Evaluate checkpoints and copy best to rl_dqn/runs/dqn_best.pt (defaults: 10 2000)
 EOF
 }
 

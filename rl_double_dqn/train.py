@@ -194,14 +194,14 @@ def train(
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Train DQN for speed_racer (Python scaffold)")
+    parser = argparse.ArgumentParser(description="Train Double DQN for speed_racer (rl_double_dqn)")
     parser.add_argument("--episodes", type=int, default=300)
     parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--warmup-steps", type=int, default=2000)
     parser.add_argument("--train-every", type=int, default=4)
     parser.add_argument("--save-every", type=int, default=50)
     parser.add_argument("--max-steps", type=int, default=2000)
-    parser.add_argument("--out-dir", type=Path, default=Path("rl/runs"))
+    parser.add_argument("--out-dir", type=Path, default=Path("rl_double_dqn/runs"))
     parser.add_argument("--resume", action="store_true", help="Resume training from out-dir/dqn_final.pt")
     parser.add_argument("--resume-from", type=Path, default=None, help="Checkpoint path to resume from")
     parser.add_argument("--lr", type=float, default=None, help="Global learning rate override when training from scratch")

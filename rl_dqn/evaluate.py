@@ -74,8 +74,8 @@ def ranking_key(result: dict) -> tuple:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Evaluate DQN checkpoints for speed_racer")
-    parser.add_argument("--runs-dir", type=Path, default=Path("rl/runs"))
+    parser = argparse.ArgumentParser(description="Evaluate DQN checkpoints for speed_racer (rl_dqn)")
+    parser.add_argument("--runs-dir", type=Path, default=Path("rl_dqn/runs"))
     parser.add_argument("--episodes", type=int, default=5)
     parser.add_argument("--max-steps", type=int, default=2000)
     parser.add_argument("--checkpoint", type=Path, default=None)
