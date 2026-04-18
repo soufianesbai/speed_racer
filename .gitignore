@@ -1,0 +1,22 @@
+.DS_Store
+
+# Build directories
+build/
+cmake-build-debug/
+cmake-build-release/
+
+# Compiled object files
+*.o
+*.a
+*.so
+*.dylib
+
+# Executables
+speed_racer
+*.exe
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
