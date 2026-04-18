@@ -1,0 +1,2 @@
+episode,reward,sim_reward,epsilon,buffer,loss,steps,collisions,checkpoints,laps,truncated,race_finished,best_score,global_step
+1,0.081501,0.081506,0.999525,50,0.000000,50,0,0,0,1,0,0.081506,50

@@ -1,8 +1,6 @@
 #include "car.hpp"
 
-// Used for std::clamp and std::max
 #include <algorithm>
-// Used for std::fabs and std::cos/sin
 #include <cmath>
 
 namespace {
@@ -12,33 +10,56 @@ float safeMaxSpeed(const CarConfig& config) {
 	return std::max(config.max_speed, 1.0f);
 }
 
-void applyThrottleAndBrake(float& speed, const CarConfig& config, float accelInput, float dt) {
+float surfaceTractionMultiplier(float surfaceFriction) {
+	if (surfaceFriction <= 1.0f) {
+		return 1.0f;
+	}
+	// Keep enough traction to move from rest, but still penalize off-track acceleration.
+	return std::clamp(1.0f / std::sqrt(surfaceFriction), 0.35f, 1.0f);
+}
+
+float surfaceSpeedMultiplier(float surfaceFriction) {
+	if (surfaceFriction <= 1.0f) {
+		return 1.0f;
+	}
+	// Cap top speed on rough surfaces while preserving controllability.
+	return std::clamp(1.0f / std::sqrt(surfaceFriction), 0.40f, 1.0f);
+}
+
+void applyThrottleAndBrake(float& speed, const CarConfig& config, float accelInput, float dt, float surfaceFriction) {
+	const float tractionMultiplier = surfaceTractionMultiplier(surfaceFriction);
 	if (accelInput > 0.0f) {
-		speed += config.acceleration * accelInput * dt;
+		speed += config.acceleration * accelInput * tractionMultiplier * dt;
 	} else if (accelInput < 0.0f) {
 		if (speed > 0.0f) {
 			// If moving forward, negative input acts as brake.
-			speed -= config.brake * (-accelInput) * dt;
+			speed -= config.brake * (-accelInput) * tractionMultiplier * dt;
 			if (speed < 0.0f) speed = 0.0f;
 		} else {
 			// Reverse is weaker than forward for finer low-speed control.
-			speed += config.acceleration * 0.4f * accelInput * dt;
+			speed += config.acceleration * 0.4f * accelInput * tractionMultiplier * dt;
 		}
 	}
 }
 
 void applyFriction(float& speed, const CarConfig& config, float accelInput, float dt, float surfaceFriction) {
-	// Apply drag/friction. Off-throttle friction depends on surface type.
-	float frictionToApply = config.baseFriction;
-	if (std::fabs(accelInput) < 0.001f) {
-		frictionToApply *= surfaceFriction;
+	// Use a smoother drag model to avoid getting "stuck" from rest on grass.
+	const float absSpeed = std::fabs(speed);
+	float rollingDecel = config.baseFriction * surfaceFriction;
+	if (std::fabs(accelInput) >= 0.001f) {
+		// Under throttle, keep resistance but allow launch from rest on rough surfaces.
+		rollingDecel *= (absSpeed < 5.0f) ? 0.08f : 0.18f;
 	}
 
+	// Add mild speed-proportional drag so high speed decays faster off-track.
+	const float linearDrag = absSpeed * 0.15f * std::max(surfaceFriction, 1.0f);
+	const float totalDecel = rollingDecel + linearDrag;
+
 	if (speed > 0.0f) {
-		speed -= frictionToApply * dt;
+		speed -= totalDecel * dt;
 		if (speed < 0.0f) speed = 0.0f;
 	} else if (speed < 0.0f) {
-		speed += frictionToApply * dt;
+		speed += totalDecel * dt;
 		if (speed > 0.0f) speed = 0.0f;
 	}
 }
@@ -51,13 +72,10 @@ void snapTinySpeedToZero(float& speed) {
 	}
 }
 
-void clampSpeed(float& speed, const CarConfig& config) {
+void clampSpeed(float& speed, const CarConfig& config, float surfaceFriction) {
 	// Clamp forward and reverse top speeds.
-	const float maxForward = safeMaxSpeed(config);
+	const float maxForward = safeMaxSpeed(config) * surfaceSpeedMultiplier(surfaceFriction);
 	const float maxReverse = -maxForward * 0.5f;
-	// Clamping speed to max forward and reverse limits to prevent exceeding defined speed thresholds.
-	// If the speed exceeds maxForward, it will be set to maxForward. If it goes below maxReverse, it will be set to maxReverse.
-	// Else, it remains unchanged. This ensures the car's speed stays within the defined limits for both forward and reverse motion.
 	speed = std::clamp(speed, maxReverse, maxForward);
 }
 
@@ -108,7 +126,7 @@ void Car::updateMotion(const CarInput& input, float dt, float surfaceFriction) {
 	float steerInput = std::clamp(input.steer, -1.0f, 1.0f);
 
 	// Apply throttle / reverse acceleration to scalar speed.
-	applyThrottleAndBrake(speed_, config_, accelInput, dt);
+	applyThrottleAndBrake(speed_, config_, accelInput, dt, surfaceFriction);
 
 	// Apply drag/friction. Off-throttle friction depends on surface type.
 	applyFriction(speed_, config_, accelInput, dt, surfaceFriction);
@@ -117,7 +135,7 @@ void Car::updateMotion(const CarInput& input, float dt, float surfaceFriction) {
 	snapTinySpeedToZero(speed_);
 
 	// Clamp forward and reverse top speeds.
-	clampSpeed(speed_, config_);
+	clampSpeed(speed_, config_, surfaceFriction);
 
 	// Steering gets weaker at higher speed for stability.
 	const float turnRate = computeTurnRate(speed_, config_);

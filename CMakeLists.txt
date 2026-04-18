@@ -33,3 +33,8 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp")
     add_executable(speed_racer main.cpp)
     target_link_libraries(speed_racer PRIVATE speed_racer_core)
 endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/rl_bridge/main.cpp")
+    add_executable(speed_racer_rl_bridge rl_bridge/main.cpp)
+    target_link_libraries(speed_racer_rl_bridge PRIVATE speed_racer_core)
+endif()
