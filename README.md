@@ -85,6 +85,12 @@ Double DQN experiment:
 ./rl_double_dqn.sh play rl_double_dqn/runs/dqn_best.pt 1 6000
 ```
 
+Compare training curves:
+
+```bash
+/Users/soufianesbai/Projets/.venv/bin/python compare_rl_curves.py --show
+```
+
 ## Training Commands
 
 Train from scratch:
@@ -104,6 +110,8 @@ Generated artifacts in `rl_dqn/runs/`:
 - `dqn_final.pt`: final model of the run
 - `dqn_best.pt`: best promoted model
 - `metrics.csv`: per-episode training metrics
+
+To compare curves later, use `compare_rl_curves.py` to plot baseline vs Double DQN from these CSV files.
 
 ## RL Notes
 

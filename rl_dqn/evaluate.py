@@ -133,8 +133,11 @@ def main() -> None:
         target = args.runs_dir / "dqn_best.pt"
         source = Path(best["checkpoint"])
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, target)
-        print(f"promoted best checkpoint to: {target}")
+        if source != target:
+            shutil.copy2(source, target)
+            print(f"promoted best checkpoint to: {target}")
+        else:
+            print(f"best checkpoint already at: {target}")
 
 
 if __name__ == "__main__":
